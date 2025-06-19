@@ -1,8 +1,8 @@
-import { useState } from 'react'
-import './App.css'
-import SchemaForm from './components/lumi-schema-form/SchemaForm'
-import type { ISchema } from './components/lumi-schema-form/data'
-import { useForm } from './components/lumi-schema-form/hooks/use-form'
+import { useState } from "react";
+import "./App.css";
+import SchemaForm from "./components/lumi-schema-form/schema-form";
+import type { ISchema } from "./components/lumi-schema-form/types/schema";
+import { useForm } from "./components/lumi-schema-form/hooks/use-form";
 
 function App() {
   // 定义一个示例 schema
@@ -11,25 +11,41 @@ function App() {
     title: "用户信息表单",
     description: "请填写您的个人信息",
     properties: {
+      obj: {
+        type: "object",
+        title: "对象",
+        properties: {
+          name: {
+            type: "string",
+            title: "obj姓名",
+            description: "请输入您的全名",
+            minLength: 2,
+            maxLength: 50,
+            required: true,
+          },
+        },
+      },
       name: {
         type: "string",
         title: "姓名",
         description: "请输入您的全名",
         minLength: 2,
-        maxLength: 50
+        maxLength: 50,
       },
       email: {
         type: "string",
         title: "电子邮箱",
         description: "请输入有效的电子邮箱地址",
-        format: "email"
+        format: "email",
+        required: true,
       },
       age: {
         type: "number",
         title: "年龄",
         description: "请输入您的年龄",
         minimum: 18,
-        maximum: 120
+        maximum: 120,
+        required: true,
       },
       gender: {
         type: "string",
@@ -39,16 +55,15 @@ function App() {
       subscribe: {
         type: "boolean",
         title: "订阅通讯",
-        description: "是否接收最新资讯和优惠信息"
+        description: "是否接收最新资讯和优惠信息",
       },
       bio: {
         type: "string",
         title: "个人简介",
         description: "请简单介绍一下您自己",
-        format: "textarea"
+        format: "textarea",
       },
     },
-    required: ["name", "email", "age"]
   };
 
   // 初始表单值
@@ -58,11 +73,14 @@ function App() {
     age: 25,
     gender: "",
     subscribe: false,
-    bio: ""
+    bio: "",
   };
 
   // 状态管理
-  const [submittedValues, setSubmittedValues] = useState<Record<string, unknown> | null>(null);
+  const [submittedValues, setSubmittedValues] = useState<Record<
+    string,
+    unknown
+  > | null>(null);
 
   // 处理表单值变化
   const handleFormChange = (values: Record<string, unknown>) => {
@@ -87,7 +105,7 @@ function App() {
   return (
     <div className="app-container">
       <h1>JSON Schema Form 示例</h1>
-      
+
       <div className="form-container">
         <SchemaForm
           form={form}
@@ -99,13 +117,10 @@ function App() {
       </div>
 
       <div className="custom-actions">
-        <button 
-          onClick={handleSubmitClick}
-          className="custom-submit-button"
-        >
+        <button onClick={handleSubmitClick} className="custom-submit-button">
           提交表单
         </button>
-        <button 
+        <button
           onClick={() => {
             form.setValues({
               name: "test",
@@ -113,7 +128,7 @@ function App() {
               age: 25,
               gender: "男",
               subscribe: true,
-              bio: "test"
+              bio: "test",
             });
           }}
           className="custom-submit-button"
@@ -129,7 +144,7 @@ function App() {
         </div>
       )}
     </div>
-  )
+  );
 }
 
-export default App
+export default App;

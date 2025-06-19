@@ -4,41 +4,96 @@
 import { useMemo, useCallback } from "react";
 
 /**
- * @description Form instance interface
+ * @description Form instance class that handles form state and actions
  */
-export interface FormInstance {
+export class FormInstance {
   /** Form values */
-  values: Record<string, unknown>;
-  
-  /** Set form values */
-  setValues: (values: Record<string, unknown>) => void;
-  
-  /** Get form values */
-  getValues: () => Record<string, unknown>;
-  
-  /** Reset form to initial values */
-  resetFields: () => void;
-  
-  /** Set initial values */
-  setInitialValues: (values: Record<string, unknown>) => void;
-  
-  /** Submit form */
-  submit: () => void;
-  
-  /** Register internal form component submit function */
-  _registerSubmitFn: (fn: () => void) => void;
-  
-  /** Register change callback when form values change */
-  _registerChangeCallback: (callback: (values: Record<string, unknown>) => void) => void;
+  public values: Record<string, unknown>;
   
   /** Internal submit function */
-  _submitFn: (() => void) | null;
+  private _submitFn: (() => void) | null = null;
   
   /** Internal change callback */
-  _changeCallback: ((values: Record<string, unknown>) => void) | null;
+  private _changeCallback: ((values: Record<string, unknown>) => void) | null = null;
   
   /** Internal initial values */
-  _initialValues: Record<string, unknown>;
+  private _initialValues: Record<string, unknown>;
+
+  /**
+   * @description Creates a new form instance
+   * @param initialValues Initial form values
+   */
+  constructor(initialValues: Record<string, unknown> = {}) {
+    this._initialValues = { ...initialValues };
+    this.values = { ...initialValues };
+  }
+  
+  /**
+   * @description Set form values
+   * @param newValues New values to set
+   */
+  public setValues(newValues: Record<string, unknown>): void {
+    this.values = { ...newValues };
+    
+    // Notify component of value changes
+    if (this._changeCallback) {
+      this._changeCallback(newValues);
+    }
+  }
+  
+  /**
+   * @description Get current form values
+   * @returns Copy of current values
+   */
+  public getValues(): Record<string, unknown> {
+    return { ...this.values };
+  }
+  
+  /**
+   * @description Reset form to initial values
+   */
+  public resetFields(): void {
+    this.values = { ...this._initialValues };
+    
+    // Notify component of reset
+    if (this._changeCallback) {
+      this._changeCallback(this.values);
+    }
+  }
+  
+  /**
+   * @description Set initial values
+   * @param newInitialValues New initial values
+   */
+  public setInitialValues(newInitialValues: Record<string, unknown>): void {
+    this._initialValues = { ...newInitialValues };
+    this.values = { ...newInitialValues };
+  }
+  
+  /**
+   * @description Submit the form
+   */
+  public submit(): void {
+    if (this._submitFn) {
+      this._submitFn();
+    }
+  }
+  
+  /**
+   * @description Register internal form component submit function
+   * @param fn Submit function to register
+   */
+  public _registerSubmitFn(fn: () => void): void {
+    this._submitFn = fn;
+  }
+  
+  /**
+   * @description Register change callback when form values change
+   * @param callback Callback to register
+   */
+  public _registerChangeCallback(callback: (values: Record<string, unknown>) => void): void {
+    this._changeCallback = callback;
+  }
 }
 
 /**
@@ -47,67 +102,16 @@ export interface FormInstance {
  * @returns Form instance
  */
 export function useForm(initialValues: Record<string, unknown> = {}): FormInstance {
+  // Create form instance using class
   const formInstance = useMemo<FormInstance>(() => {
-    const values = { ...initialValues };
-    
-    const instance: FormInstance = {
-      values,
-      
-      setValues: (newValues) => {
-        instance.values = { ...newValues };
-        
-        // 通知组件值变更
-        if (instance._changeCallback) {
-          instance._changeCallback(newValues);
-        }
-      },
-      
-      getValues: () => {
-        return { ...instance.values };
-      },
-      
-      resetFields: () => {
-        instance.values = { ...instance._initialValues };
-        
-        // 通知组件值重置
-        if (instance._changeCallback) {
-          instance._changeCallback(instance.values);
-        }
-      },
-      
-      setInitialValues: (newInitialValues) => {
-        instance._initialValues = { ...newInitialValues };
-        instance.values = { ...newInitialValues };
-      },
-      
-      submit: () => {
-        if (instance._submitFn) {
-          instance._submitFn();
-        }
-      },
-      
-      _registerSubmitFn: (fn) => {
-        instance._submitFn = fn;
-      },
-      
-      _registerChangeCallback: (callback) => {
-        instance._changeCallback = callback;
-      },
-      
-      _submitFn: null,
-      
-      _changeCallback: null,
-      
-      _initialValues: { ...initialValues }
-    };
-    
-    return instance;
+    return new FormInstance(initialValues);
   }, [initialValues]);
   
-  // Initialize form instance with initial values
-  useCallback(() => {
+  // Initialize form instance with initial values when they change
+  const initFormInstance = useCallback(() => {
     formInstance.setInitialValues(initialValues);
   }, [formInstance, initialValues]);
+  initFormInstance();
   
   return formInstance;
 }
